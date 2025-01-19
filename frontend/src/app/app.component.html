@@ -1,0 +1,90 @@
+<!-- Si l'utilisateur n'est pas connecté, afficher la page de saisie du nom d'utilisateur -->
+<div *ngIf="!isConnected" id="username-page">
+  <div class="username-page-container">
+    <!-- Titre de la page de saisie du nom d'utilisateur -->
+    <h1 class="title">Type your username to join the Chatroom</h1>
+
+    <!-- Formulaire pour saisir le nom d'utilisateur -->
+    <!-- Lorsque le formulaire est soumis, il appelle la méthode connect() -->
+    <form (ngSubmit)="connect()">
+      <div class="form-group">
+        <!-- Champ de saisie du nom d'utilisateur lié à la propriété username -->
+        <input [(ngModel)]="username" name="username" type="text" id="name" placeholder="Username" autocomplete="off" class="form-control" />
+      </div>
+
+      <!-- Bouton pour soumettre le nom d'utilisateur et se connecter au chat -->
+      <div class="form-group">
+        <button type="submit" class="accent username-submit">Start Chatting</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Si l'utilisateur est connecté, afficher l'interface de la salle de chat -->
+<div *ngIf="isConnected" id="chatroom">
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="user-info">
+        <!-- Avatar de l'utilisateur -->
+        <div class="avatar" [style.backgroundColor]="getAvatarColor(username)">
+          {{ username.charAt(0).toUpperCase() }}
+        </div>
+        <!-- Message de bienvenue -->
+        <p>Hello, {{ username }}!</p>
+      </div>
+
+      <ul>
+        <li (click)="navigateTo('home')">Home</li>
+        <li (click)="navigateTo('profile')">Profile</li>
+        <li (click)="navigateTo('settings')">Settings</li>
+      </ul>
+
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </aside>
+
+    <!-- Contenu de la salle de chat -->
+    <div class="chat-container">
+      <!-- En-tête de la salle de chat -->
+      <div class="chat-header">
+        <h2 style="color: #d1d5db">Spring Boot WebSocket Demo App!</h2>
+      </div>
+
+      <!-- Si un message de connexion existe, l'afficher (par exemple, "Connecting...") -->
+      <div *ngIf="connectingMessage" class="connecting">{{ connectingMessage }}</div>
+
+      <!-- Afficher la liste des messages -->
+      <ul id="messageArea">
+        <!-- Boucle à travers chaque message dans le tableau messages -->
+        <!-- Utilise ngClass pour appliquer une classe conditionnelle en fonction du type de message -->
+        <li *ngFor="let message of messages" [ngClass]="{'event-message': message.type !== 'CHAT', 'chat-message': message.type === 'CHAT'}">
+          <!-- Si le message est un message de chat, afficher l'avatar de l'expéditeur (première lettre de son nom) avec une couleur de fond -->
+          <i *ngIf="message.type === 'CHAT'" [style.backgroundColor]="getAvatarColor(message.sender)">{{ message.sender.charAt(0) }}</i>
+
+          <!-- Afficher le nom de l'expéditeur si c'est un message de chat -->
+          <span style="color:white;" *ngIf="message.type === 'CHAT'">{{ message.sender }}</span>
+
+          <!-- Afficher le contenu du message -->
+          <!-- Si c'est un message de chat, afficher le contenu -->
+          <!-- Si c'est un message événement (JOIN/LEAVE), afficher une notification comme "L'utilisateur a rejoint!" -->
+          <p style="color: #d1d5db">{{ message.type === 'CHAT' ? message.content : message.sender + ' ' + (message.type === 'JOIN' ? 'joined!' : 'left!') }}</p>
+        </li>
+      </ul>
+
+      <!-- Formulaire pour taper et envoyer de nouveaux messages -->
+      <!-- Lorsque le formulaire est soumis, il appelle la méthode sendMessage() -->
+      <form (ngSubmit)="sendMessage()" id="typingArea">
+        <div class="form-group">
+          <div class="input-group clearfix">
+            <!-- Champ de saisie lié à la propriété message pour taper de nouveaux messages -->
+            <input [(ngModel)]="message" name="message" type="text" id="message" placeholder="Write a message..." autocomplete="off" class="form-control" style="width: 800px"/>
+
+            <!-- Bouton pour envoyer le message -->
+            <button type="submit" class="primary">Send</button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
